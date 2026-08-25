@@ -1,0 +1,317 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+
+body {
+
+    font-family:
+        "Yu Gothic",
+        "Meiryo",
+        sans-serif;
+
+    background: #111;
+
+    color: white;
+
+    min-height: 100vh;
+
+    padding: 25px 15px;
+
+}
+
+
+header {
+
+    text-align: center;
+
+    margin-bottom: 25px;
+
+}
+
+
+header h1 {
+
+    font-size: 38px;
+
+    margin-bottom: 8px;
+
+}
+
+
+header p {
+
+    color: #aaa;
+
+    font-size: 16px;
+
+}
+
+
+main {
+
+    width: 100%;
+
+    max-width: 600px;
+
+    margin: auto;
+
+}
+
+
+/* ==============================
+   日付選択
+============================== */
+
+#daySelect {
+
+    display: flex;
+
+    justify-content: center;
+
+    gap: 35px;
+
+    width: 100%;
+
+    background: #1d1d1d;
+
+    border: 1px solid #333;
+
+    border-radius: 15px;
+
+    padding: 15px;
+
+    margin-bottom: 20px;
+
+}
+
+
+#daySelect label {
+
+    font-size: 18px;
+
+    cursor: pointer;
+
+}
+
+
+#daySelect input {
+
+    transform: scale(1.2);
+
+    margin-right: 7px;
+
+}
+
+
+/* ==============================
+   読み込み
+============================== */
+
+#loading {
+
+    text-align: center;
+
+    color: #aaa;
+
+    padding: 20px;
+
+}
+
+
+/* ==============================
+   チケット
+============================== */
+
+.ticket {
+
+    background: #1d1d1d;
+
+    border: 1px solid #333;
+
+    border-radius: 15px;
+
+    padding: 18px;
+
+    margin-bottom: 12px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+}
+
+
+.ticket-info {
+
+    min-width: 0;
+
+}
+
+
+.ticket-number {
+
+    font-size: 26px;
+
+    font-weight: bold;
+
+}
+
+
+.ticket-id {
+
+    color: #777;
+
+    font-size: 12px;
+
+    margin-top: 3px;
+
+}
+
+
+/* ==============================
+   ステータス
+============================== */
+
+.ticket-status {
+
+    font-size: 14px;
+
+    font-weight: bold;
+
+    margin-top: 5px;
+
+}
+
+
+.status-waiting {
+
+    color: #aaa;
+
+}
+
+
+.status-accepted {
+
+    color: #00c853;
+
+}
+
+
+.status-entered {
+
+    color: #2196f3;
+
+}
+
+
+/* ==============================
+   セレクト
+============================== */
+
+.status-select {
+
+    flex-shrink: 0;
+
+    background: #333;
+
+    color: white;
+
+    border: 1px solid #555;
+
+    border-radius: 10px;
+
+    padding: 10px 12px;
+
+    font-size: 15px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+}
+
+
+.status-select:focus {
+
+    outline: 2px solid #2196f3;
+
+}
+
+
+/* ==============================
+   更新中
+============================== */
+
+.status-select.updating {
+
+    opacity: 0.5;
+
+    pointer-events: none;
+
+}
+
+
+/* ==============================
+   エラー
+============================== */
+
+.error {
+
+    background: #2a1515;
+
+    border: 1px solid #e53935;
+
+    color: #ff6b6b;
+
+    border-radius: 15px;
+
+    padding: 20px;
+
+    text-align: center;
+
+}
+
+
+/* ==============================
+   スマホ
+============================== */
+
+@media (max-width: 600px) {
+
+    header h1 {
+
+        font-size: 32px;
+
+    }
+
+
+    .ticket {
+
+        padding: 15px;
+
+    }
+
+
+    .ticket-number {
+
+        font-size: 22px;
+
+    }
+
+
+    .status-select {
+
+        font-size: 14px;
+
+        padding: 9px 8px;
+
+    }
+
+}

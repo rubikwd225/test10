@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>入場管理</title>
+
+    <script src="https://unpkg.com/html5-qrcode"></script>
+
+    <link rel="stylesheet" href="admin2.css">
+
+</head>
+
+
+<body>
+
+    <header>
+
+        <h1>入場</h1>
+
+        <p>
+            整理券のQRコードを読み取ってください
+        </p>
+
+    </header>
+
+
+    <main>
+
+
+        <!-- 日付 -->
+
+        <div id="daySelect">
+
+            <label>
+
+                <input
+                    type="radio"
+                    name="day"
+                    value="tickets_day1"
+                    checked
+                >
+
+                1日目
+
+            </label>
+
+
+            <label>
+
+                <input
+                    type="radio"
+                    name="day"
+                    value="tickets_day2"
+                >
+
+                2日目
+
+            </label>
+
+        </div>
+
+
+        <!-- 開始 -->
+
+        <button id="startBtn">
+
+            QRスキャン開始
+
+        </button>
+
+
+        <!-- QR -->
+
+        <div id="reader"></div>
+
+
+        <!-- 停止 -->
+
+        <button id="stopBtn">
+
+            カメラを閉じる
+
+        </button>
+
+
+        <!-- 結果 -->
+
+        <section id="result"></section>
+
+
+        <!-- 次 -->
+
+        <button id="retryBtn">
+
+            次の整理券を読み取る
+
+        </button>
+
+
+    </main>
+
+
+    <script
+        type="module"
+        src="admin2.js"
+    ></script>
+
+
+</body>
+
+</html>
