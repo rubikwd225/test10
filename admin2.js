@@ -27,13 +27,15 @@ const result =
 const retryBtn =
     document.getElementById("retryBtn");
 
+const currentDay =
+    document.getElementById("currentDay");
+
 
 // ========================================
 // 変数
 // ========================================
 
-let collectionName =
-    "tickets_day1";
+let collectionName = "tickets_day1";
 
 let scanner = null;
 
@@ -43,10 +45,11 @@ let processing = false;
 
 let unsubscribeDay = null;
 
+let dayLoaded = false;
+
 
 // ========================================
 // Firebase
-// settings / system
 // ========================================
 
 const systemRef =
@@ -58,19 +61,35 @@ const systemRef =
 
 
 // ========================================
-// 日付をFirebaseから取得
+// 日付名
 // ========================================
 
-function startDayListener() {
+function getDayText(day) {
 
-    if (unsubscribeDay) {
+    switch (day) {
 
-        unsubscribeDay();
+        case "tickets_day1":
+            return "1日目";
 
-        unsubscribeDay = null;
+        case "tickets_day2":
+            return "2日目";
+
+        case "tickets_day3":
+            return "3日目";
+
+        default:
+            return "不明";
 
     }
 
+}
+
+
+// ========================================
+// Firebaseの日付監視
+// ========================================
+
+function startDayListener() {
 
     unsubscribeDay =
         onSnapshot(
@@ -81,9 +100,10 @@ function startDayListener() {
 
                 if (!snapshot.exists()) {
 
-                    console.error(
-                        "settings/system が存在しません"
-                    );
+                    currentDay.textContent =
+                        "日付設定がありません";
+
+                    dayLoaded = false;
 
                     return;
 
@@ -100,7 +120,8 @@ function startDayListener() {
 
                 if (
                     activeDay !== "tickets_day1" &&
-                    activeDay !== "tickets_day2"
+                    activeDay !== "tickets_day2" &&
+                    activeDay !== "tickets_day3"
                 ) {
 
                     console.error(
@@ -108,15 +129,25 @@ function startDayListener() {
                         activeDay
                     );
 
+                    currentDay.textContent =
+                        "日付設定が不正です";
+
+                    dayLoaded = false;
+
                     return;
 
                 }
 
 
-                // Firebaseの日付を使用
-
                 collectionName =
                     activeDay;
+
+
+                currentDay.textContent =
+                    `現在：${getDayText(activeDay)}`;
+
+
+                dayLoaded = true;
 
 
                 console.log(
@@ -133,16 +164,17 @@ function startDayListener() {
                     error
                 );
 
+                currentDay.textContent =
+                    "日付の取得に失敗しました";
+
+                dayLoaded = false;
+
             }
 
         );
 
 }
 
-
-// ========================================
-// 日付監視開始
-// ========================================
 
 startDayListener();
 
@@ -152,6 +184,16 @@ startDayListener();
 // ========================================
 
 startBtn.onclick = () => {
+
+    if (!dayLoaded) {
+
+        alert(
+            "現在の日付を読み込んでいます。"
+        );
+
+        return;
+
+    }
 
     startScanner();
 
@@ -235,30 +277,22 @@ async function startScanner() {
 
         console.error(error);
 
-
         scanning = false;
-
 
         reader.style.display =
             "none";
 
-
         stopBtn.style.display =
             "none";
-
 
         startBtn.style.display =
             "block";
 
 
         showResult(
-
             "error",
-
             "カメラエラー",
-
             "カメラを起動できませんでした。"
-
         );
 
     }
@@ -285,8 +319,6 @@ async function scanSuccess(text) {
     processing = true;
 
 
-    // 読み取った瞬間にカメラ停止
-
     await stopScanner();
 
 
@@ -307,7 +339,11 @@ async function processTicket(ticketId) {
 
     try {
 
-        const ticketRef =
+        // ====================================
+        // 通常整理券を検索
+        // ====================================
+
+        let ticketRef =
             doc(
                 db,
                 collectionName,
@@ -315,24 +351,53 @@ async function processTicket(ticketId) {
             );
 
 
-        const snap =
+        let snap =
             await getDoc(ticketRef);
 
 
+        let isSpecial =
+            false;
+
+
         // ====================================
-        // 存在しない
+        // 通常券にない場合
+        // 特別招待券を検索
+        // ====================================
+
+        if (!snap.exists()) {
+
+            ticketRef =
+                doc(
+                    db,
+                    "special_tickets",
+                    ticketId
+                );
+
+
+            snap =
+                await getDoc(ticketRef);
+
+
+            if (snap.exists()) {
+
+                isSpecial =
+                    true;
+
+            }
+
+        }
+
+
+        // ====================================
+        // どちらにもない
         // ====================================
 
         if (!snap.exists()) {
 
             showResult(
-
                 "error",
-
                 "無効な整理券",
-
                 "このQRコードの整理券は見つかりません。"
-
             );
 
             return;
@@ -349,24 +414,24 @@ async function processTicket(ticketId) {
             ticketId;
 
 
+        const status =
+            data.status ??
+            "waiting";
+
+
         // ====================================
         // 無効
         // ====================================
 
-        if (
-            data.status === "invalid"
-        ) {
+        if (status === "invalid") {
 
             showResult(
-
                 "danger",
-
                 "無効な整理券",
-
-                `No.${number} は無効になっています。`,
-
-                number
-
+                isSpecial
+                    ? "この特別招待券は無効になっています。"
+                    : `No.${number} は無効になっています。`,
+                isSpecial ? null : number
             );
 
             return;
@@ -378,20 +443,15 @@ async function processTicket(ticketId) {
         // 受付前
         // ====================================
 
-        if (
-            data.status === "waiting"
-        ) {
+        if (status === "waiting") {
 
             showResult(
-
                 "warning",
-
                 "まだ受付されていません",
-
-                `No.${number} は受付前です。`,
-
-                number
-
+                isSpecial
+                    ? "この特別招待券はまだ受付されていません。"
+                    : `No.${number} は受付前です。`,
+                isSpecial ? null : number
             );
 
             return;
@@ -400,35 +460,31 @@ async function processTicket(ticketId) {
 
 
         // ====================================
-        // 受付済み
+        // 受付済み → 入場済み
         // ====================================
 
-        if (
-            data.status === "accepted"
-        ) {
+        if (status === "accepted") {
 
             await updateDoc(
 
                 ticketRef,
 
                 {
-                    status:
-                        "entered"
+                    status: "entered"
                 }
 
             );
 
 
             showResult(
-
                 "success",
-
-                "入場完了！",
-
-                `No.${number} を入場済みにしました。`,
-
-                number
-
+                isSpecial
+                    ? "特別招待券・入場完了！"
+                    : "入場完了！",
+                isSpecial
+                    ? "特別招待券を入場済みにしました。"
+                    : `No.${number} を入場済みにしました。`,
+                isSpecial ? null : number
             );
 
             return;
@@ -440,20 +496,15 @@ async function processTicket(ticketId) {
         // 入場済み
         // ====================================
 
-        if (
-            data.status === "entered"
-        ) {
+        if (status === "entered") {
 
             showResult(
-
                 "danger",
-
-                "⚠ すでに入場済み",
-
-                `No.${number} はすでに入場済みです。`,
-
-                number
-
+                "すでに入場済み",
+                isSpecial
+                    ? "この特別招待券はすでに入場済みです。"
+                    : `No.${number} はすでに入場済みです。`,
+                isSpecial ? null : number
             );
 
             return;
@@ -466,15 +517,9 @@ async function processTicket(ticketId) {
         // ====================================
 
         showResult(
-
             "error",
-
             "不明な状態",
-
-            `No.${number} の状態を確認できません。`,
-
-            number
-
+            "チケットの状態を確認できません。"
         );
 
     }
@@ -485,13 +530,9 @@ async function processTicket(ticketId) {
 
 
         showResult(
-
             "error",
-
             "処理エラー",
-
             "データの処理に失敗しました。"
-
         );
 
     }
@@ -526,9 +567,7 @@ function showResult(
         html += `
 
             <div class="ticket-number">
-
                 No.${number}
-
             </div>
 
         `;
@@ -539,16 +578,11 @@ function showResult(
     html += `
 
         <div class="result-title">
-
             ${title}
-
         </div>
 
-
         <div class="result-message">
-
             ${message}
-
         </div>
 
     `;
@@ -577,7 +611,6 @@ async function stopScanner() {
             await scanner.stop();
 
         }
-
         catch (error) {
 
             console.log(
@@ -593,7 +626,6 @@ async function stopScanner() {
             await scanner.clear();
 
         }
-
         catch (error) {
 
             console.log(
@@ -635,7 +667,6 @@ stopBtn.onclick =
         result.style.display =
             "none";
 
-
         result.innerHTML =
             "";
 
@@ -661,7 +692,6 @@ retryBtn.onclick = () => {
 
     result.style.display =
         "none";
-
 
     result.innerHTML =
         "";
